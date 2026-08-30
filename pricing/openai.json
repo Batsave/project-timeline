@@ -1,0 +1,13 @@
+{
+  "version": "2026-08-01",
+  "date": "2026-08-30",
+  "source": "https://openai.com/api/pricing — relevé manuel, à maintenir à la main",
+  "unit": "USD per 1M tokens",
+  "models": {
+    "gpt-5-codex": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "gpt-5": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "gpt-5.5": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "codex-auto-review": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "o4-mini": { "in": 1.1, "out": 4.4, "cacheReadMult": 0.25 }
+  }
+}

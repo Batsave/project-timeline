@@ -1,0 +1,19 @@
+{
+  "extension.displayName": "Project Timeline",
+  "extension.description": "Mesure locale du temps de dev par projet : temps réel, agents IA (Claude Code / Codex CLI), tokens & coût estimé, tests, tasks, debug, git, diagnostics. Aucune donnée ne quitte la machine.",
+  "command.showPanel.title": "Project Timeline: Ouvrir le tableau de bord",
+  "command.showSummary.title": "Project Timeline: Afficher le résumé (Markdown)",
+  "command.exportJson.title": "Project Timeline: Exporter en JSON",
+  "command.exportCsv.title": "Project Timeline: Exporter en CSV",
+  "command.openDataFolder.title": "Project Timeline: Ouvrir le dossier de données",
+  "command.recomputeRollups.title": "Project Timeline: Recalculer les agrégats",
+  "configuration.title": "Project Timeline",
+  "configuration.idleTimeoutMinutes.description": "Fenêtre de tolérance (minutes) après la dernière interaction éditeur. Passé ce délai sans interaction, sans agent actif et sans que la fenêtre reste au premier plan, la session est clôturée.",
+  "configuration.agentGraceMinutes.description": "Un agent (Claude Code / Codex CLI) est considéré actif jusqu'à N minutes après sa dernière écriture dans son fichier de session.",
+  "configuration.suspendOnScreenLock.description": "Clôturer la session quand la fenêtre perd le focus depuis longtemps, même si un agent tourne.",
+  "configuration.minSessionSeconds.description": "Les sessions plus courtes que cette durée ne sont pas enregistrées.",
+  "configuration.fileEditFlushSeconds.description": "Fenêtre d'agrégation des éditions par fichier avant d'émettre un événement file_edit.",
+  "configuration.diagnosticsDebounceSeconds.description": "Anti-rebond des snapshots de diagnostics (erreurs / avertissements).",
+  "configuration.claudeProjectsDir.description": "Répertoire des sessions Claude Code. Vide = ~/.claude/projects.",
+  "configuration.codexSessionsDir.description": "Répertoire des sessions Codex CLI. Vide = ~/.codex/sessions."
+}

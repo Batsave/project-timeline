@@ -1,0 +1,19 @@
+{
+  "extension.displayName": "Project Timeline",
+  "extension.description": "Local measurement of dev time per project: real time, AI agents (Claude Code / Codex CLI), tokens & estimated cost, tests, tasks, debug, git, diagnostics. No data leaves the machine.",
+  "command.showPanel.title": "Project Timeline: Open Dashboard",
+  "command.showSummary.title": "Project Timeline: Show Summary (Markdown)",
+  "command.exportJson.title": "Project Timeline: Export as JSON",
+  "command.exportCsv.title": "Project Timeline: Export as CSV",
+  "command.openDataFolder.title": "Project Timeline: Open Data Folder",
+  "command.recomputeRollups.title": "Project Timeline: Recompute Rollups",
+  "configuration.title": "Project Timeline",
+  "configuration.idleTimeoutMinutes.description": "Tolerance window (minutes) after the last editor interaction. Past this delay with no interaction, no active agent, and the window not staying in the foreground, the session is closed.",
+  "configuration.agentGraceMinutes.description": "An agent (Claude Code / Codex CLI) is considered active until N minutes after its last write to its session file.",
+  "configuration.suspendOnScreenLock.description": "Close the session when the window has been unfocused for a long time, even if an agent is running.",
+  "configuration.minSessionSeconds.description": "Sessions shorter than this duration are not recorded.",
+  "configuration.fileEditFlushSeconds.description": "Aggregation window for per-file edits before emitting a file_edit event.",
+  "configuration.diagnosticsDebounceSeconds.description": "Debounce for diagnostics snapshots (errors / warnings).",
+  "configuration.claudeProjectsDir.description": "Claude Code sessions directory. Empty = ~/.claude/projects.",
+  "configuration.codexSessionsDir.description": "Codex CLI sessions directory. Empty = ~/.codex/sessions."
+}

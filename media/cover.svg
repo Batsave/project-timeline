@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <linearGradient id="bgGrad" gradientUnits="userSpaceOnUse" x1="180" y1="620" x2="1100" y2="20">
+      <stop offset="0" stop-color="#171A20"/>
+      <stop offset="0.5" stop-color="#0D1016"/>
+      <stop offset="1" stop-color="#07090D"/>
+    </linearGradient>
+    <style>
+      .display { font-family: 'Segoe UI Semibold', 'Segoe UI', sans-serif; }
+      .body { font-family: 'Segoe UI', sans-serif; }
+      .mono { font-family: 'Consolas', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bgGrad)"/>
+
+  <!-- folder + progression motif, scaled up from the logo -->
+  <g transform="translate(120,120) scale(0.62)">
+    <path d="M87,210.4v-88.9c0-18.9,15.5-34.2,34.6-34.2h61.8c11.3,0,21.8,5.4,28.3,14.5l29.9,41.8
+			c6.5,9.1,17.1,14.5,28.3,14.5h70.5c19.1,0,34.6,15.3,34.6,34.2v4.2"
+      fill="none" stroke="#FEFEFE" stroke-width="17" stroke-linecap="square" stroke-linejoin="round"/>
+    <path d="M87,301.5v25c0,18.9,15.5,34.2,34.6,34.2h218.8c19.1,0,34.6-15.3,34.6-34.2v-10.3"
+      fill="none" stroke="#FEFEFE" stroke-width="17" stroke-linecap="square" stroke-linejoin="round"/>
+    <path d="M63.9,255.9h277" fill="none" stroke="#AEAEAE" stroke-width="12" stroke-linecap="square"/>
+    <circle cx="64.8" cy="255.9" r="22.8" fill="#EAEAEA"/>
+    <circle cx="127.6" cy="255.9" r="23.7" fill="#EAEAEA"/>
+    <circle cx="199.6" cy="255.9" r="23.7" fill="#EAEAEA"/>
+    <circle cx="271.5" cy="255.9" r="23.7" fill="#EAEAEA"/>
+    <circle cx="374.4" cy="255.9" r="45.5" fill="#FEFEFE"/>
+  </g>
+
+  <!-- wordmark + tagline -->
+  <g transform="translate(560,255)">
+    <text x="0" y="0" class="display" font-size="70" font-weight="600" fill="#FEFEFE" letter-spacing="-1">Project Timeline</text>
+    <text x="4" y="50" class="body" font-size="24" fill="#AEAEAE">Mesure locale du temps de dev, par projet</text>
+  </g>
+
+  <!-- stat row, echoing the logo's dot-timeline motif -->
+  <g transform="translate(564,385)">
+    <line x1="4" y1="0" x2="636" y2="0" stroke="#3A3F47" stroke-width="2"/>
+    <circle cx="4" cy="0" r="4" fill="#EAEAEA"/>
+    <circle cx="217" cy="0" r="4" fill="#EAEAEA"/>
+    <circle cx="430" cy="0" r="4" fill="#EAEAEA"/>
+    <circle cx="636" cy="0" r="7" fill="#FEFEFE"/>
+
+    <g class="mono" font-size="19">
+      <g transform="translate(0,38)">
+        <text x="0" y="0" fill="#FEFEFE" font-weight="600">6h 42m</text>
+        <text x="0" y="26" fill="#7C828B" font-size="14">temps mesuré</text>
+      </g>
+      <g transform="translate(213,38)">
+        <text x="0" y="0" fill="#FEFEFE" font-weight="600">1.2M</text>
+        <text x="0" y="26" fill="#7C828B" font-size="14">tokens agents</text>
+      </g>
+      <g transform="translate(426,38)">
+        <text x="0" y="0" fill="#FEFEFE" font-weight="600">$3.84</text>
+        <text x="0" y="26" fill="#7C828B" font-size="14">coût estimé</text>
+      </g>
+      <g transform="translate(590,38)">
+        <text x="0" y="0" fill="#FEFEFE" font-weight="600">14</text>
+        <text x="0" y="26" fill="#7C828B" font-size="14">sessions</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- footer signature -->
+  <text x="60" y="600" class="mono" font-size="16" fill="#4A4F57" letter-spacing="1">AUCUNE DONNÉE NE QUITTE LA MACHINE — BS STUDIO</text>
+</svg>

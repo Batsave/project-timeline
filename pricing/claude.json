@@ -1,0 +1,11 @@
+{
+  "version": "2026-08-01",
+  "date": "2026-08-30",
+  "source": "https://www.anthropic.com/pricing — relevé manuel, à maintenir à la main",
+  "unit": "USD per 1M tokens",
+  "models": {
+    "claude-sonnet-5": { "in": 3, "out": 15, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 },
+    "claude-opus-5": { "in": 15, "out": 75, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 },
+    "claude-haiku-4-5": { "in": 1, "out": 5, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "name": "project-timeline",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "version": "1.1.0",
+  "publisher": "bs-studio",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "BS Studio",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Batsave/project-timeline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Batsave/project-timeline/issues"
+  },
+  "homepage": "https://github.com/Batsave/project-timeline#readme",
+  "keywords": [
+    "time tracking",
+    "productivity",
+    "claude code",
+    "codex cli",
+    "ai agents",
+    "dashboard"
+  ],
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "commands": [
+      {
+        "command": "projectTracker.showPanel",
+        "title": "%command.showPanel.title%"
+      },
+      {
+        "command": "projectTracker.showSummary",
+        "title": "%command.showSummary.title%"
+      },
+      {
+        "command": "projectTracker.exportJson",
+        "title": "%command.exportJson.title%"
+      },
+      {
+        "command": "projectTracker.exportCsv",
+        "title": "%command.exportCsv.title%"
+      },
+      {
+        "command": "projectTracker.openDataFolder",
+        "title": "%command.openDataFolder.title%"
+      },
+      {
+        "command": "projectTracker.recomputeRollups",
+        "title": "%command.recomputeRollups.title%"
+      }
+    ],
+    "configuration": {
+      "title": "%configuration.title%",
+      "properties": {
+        "projectTracker.idleTimeoutMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "%configuration.idleTimeoutMinutes.description%"
+        },
+        "projectTracker.agentGraceMinutes": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "description": "%configuration.agentGraceMinutes.description%"
+        },
+        "projectTracker.suspendOnScreenLock": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.suspendOnScreenLock.description%"
+        },
+        "projectTracker.minSessionSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 0,
+          "description": "%configuration.minSessionSeconds.description%"
+        },
+        "projectTracker.fileEditFlushSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 5,
+          "description": "%configuration.fileEditFlushSeconds.description%"
+        },
+        "projectTracker.diagnosticsDebounceSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "description": "%configuration.diagnosticsDebounceSeconds.description%"
+        },
+        "projectTracker.claudeProjectsDir": {
+          "type": "string",
+          "default": "",
+          "description": "%configuration.claudeProjectsDir.description%"
+        },
+        "projectTracker.codexSessionsDir": {
+          "type": "string",
+          "default": "",
+          "description": "%configuration.codexSessionsDir.description%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
+    "vscode:prepublish": "node esbuild.js --production",
+    "package": "npm run typecheck && npm run build -- --production && npx @vscode/vsce package --no-dependencies --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.93.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.5.0"
+  }
+}
