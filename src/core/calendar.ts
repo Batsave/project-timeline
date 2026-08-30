@@ -171,6 +171,77 @@ export function buildCalendarGrid(
   };
 }
 
+export interface YearMonth {
+  year: number;
+  /** 0..11 */
+  month: number;
+}
+
+/** Liste des mois (déscendant, plus récent d'abord) couverts par les données. */
+export function availableMonths(cells: Map<string, DayCell>, endTs: number): YearMonth[] {
+  const seen = new Set<string>();
+  const out: YearMonth[] = [];
+  const add = (year: number, month: number) => {
+    const key = `${year}-${month}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push({ year, month });
+    }
+  };
+  const now = new Date(endTs);
+  add(now.getFullYear(), now.getMonth());
+  for (const key of cells.keys()) {
+    add(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1);
+  }
+  return out.sort((a, b) => b.year - a.year || b.month - a.month);
+}
+
+/**
+ * Grille contribution pour UN mois civil précis (1er → dernier jour du mois,
+ * alignée sur le dimanche comme buildCalendarGrid) — pour la navigation mois
+ * par mois de la heatmap.
+ */
+export function buildCalendarGridForMonth(
+  cells: Map<string, DayCell>,
+  year: number,
+  month: number,
+): CalendarGrid {
+  const monthStart = new Date(year, month, 1).getTime();
+  const monthEnd = new Date(year, month + 1, 0).getTime();
+  const start = new Date(monthStart);
+  start.setDate(start.getDate() - start.getDay());
+  const end = new Date(monthEnd);
+
+  const weeks: (DayCell | null)[][] = [];
+  let cur = new Date(start);
+  let week: (DayCell | null)[] = [];
+  let maxDurationMs = 0;
+
+  while (cur <= end) {
+    const key = localDateKey(cur.getTime());
+    const inMonth = cur.getFullYear() === year && cur.getMonth() === month;
+    const cell = inMonth ? cells.get(key) ?? emptyCell(key) : null;
+    if (cell) maxDurationMs = Math.max(maxDurationMs, cell.durationMs);
+    week.push(cell);
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
+    cur = new Date(cur.getTime() + DAY_MS);
+  }
+  if (week.length) {
+    while (week.length < 7) week.push(null);
+    weeks.push(week);
+  }
+
+  return {
+    weeks,
+    firstDate: localDateKey(monthStart),
+    lastDate: localDateKey(monthEnd),
+    maxDurationMs,
+  };
+}
+
 /** Heatmap jour-de-semaine × heure à partir des sessions (temps réparti sur l'heure de début). */
 export function buildScheduleHeatmap(events: TrackEvent[], project: string): ScheduleHeatmap {
   const cells: number[][] = Array.from({ length: 7 }, () => new Array(24).fill(0));
@@ -208,6 +279,45 @@ export function dailySeries(
   for (let i = 0; i < days; i++) {
     const key = localDateKey(startKeyTs + i * DAY_MS);
     out.push(cells.get(key) ?? emptyCell(key));
+  }
+  return out;
+}
+
+export interface SeriesPoint {
+  cell: DayCell;
+  /** true si ce point représente un run de N jours vides fusionnés (axe non-linéaire). */
+  isGap: boolean;
+  /** nb de jours réels représentés par ce point (>1 seulement si isGap). */
+  spanDays: number;
+}
+
+/**
+ * Version « non-linéaire » de dailySeries : les runs consécutifs de jours SANS
+ * AUCUNE activité (durationMs === 0) sont fusionnés en un seul point compact au
+ * lieu d'occuper une largeur d'axe par jour vide — on ne « compte » pas chaque
+ * jour mort un par un. Les jours avec activité restent un point par jour.
+ */
+export function dailySeriesNonLinear(
+  cells: Map<string, DayCell>,
+  endTs: number,
+  days: number,
+): SeriesPoint[] {
+  const raw = dailySeries(cells, endTs, days);
+  const out: SeriesPoint[] = [];
+  let i = 0;
+  while (i < raw.length) {
+    const c = raw[i];
+    if (c.durationMs > 0) {
+      out.push({ cell: c, isGap: false, spanDays: 1 });
+      i++;
+      continue;
+    }
+    // run de jours vides consécutifs
+    let j = i;
+    while (j < raw.length && raw[j].durationMs === 0) j++;
+    const span = j - i;
+    out.push({ cell: raw[i], isGap: span > 1, spanDays: span });
+    i = j;
   }
   return out;
 }
