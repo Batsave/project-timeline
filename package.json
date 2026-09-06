@@ -2,7 +2,7 @@
   "name": "project-timeline",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "publisher": "bs-studio",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",

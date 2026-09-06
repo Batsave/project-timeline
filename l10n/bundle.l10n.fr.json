@@ -36,7 +36,7 @@
   "Agent alone · 7 d": "Agent seul · 7 j",
   "Commits · 7 d": "Commits · 7 j",
   "Tokens · total": "Tokens · total",
-  "Tokens (excl. cache) · total": "Tokens (hors cache) · total",
+  "Tokens (excl. cache) · total": "Tokens (hors cache)",
   "{0} agent(s)": "{0} agent(s)",
   "Estimated cost · total": "Coût estimé · total",
   "Tests · 7 d": "Tests · 7 j",

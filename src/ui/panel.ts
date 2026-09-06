@@ -50,6 +50,10 @@ export class Panel {
         void this.update();
       }
     });
+    // affiche un écran de chargement immédiatement : computeGitHistoryStats
+    // peut prendre plusieurs secondes sur un gros historique, le panel ne
+    // doit pas rester vide/blanc pendant ce temps.
+    this.panel.webview.html = renderLoading();
     await this.update();
   }
 
@@ -80,9 +84,13 @@ export class Panel {
 
     // stats git rétroactives (composition langage + fichiers), calculées une
     // fois puis mises en cache pour la session du panel (coûteux : un diff/commit).
+    // écran de chargement affiché seulement pour ce premier calcul, pas sur les
+    // refresh suivants où le cache est déjà chaud.
     if (this.gitHistory === undefined) {
+      this.panel.webview.html = renderLoading();
       const root = currentWorkspaceRoot();
       this.gitHistory = root ? await computeGitHistoryStats(root) : null;
+      if (!this.panel) return;
     }
 
     this.panel.webview.html = render(
@@ -103,6 +111,58 @@ export class Panel {
 }
 
 /* ------------------------------------------------------------------ rendering */
+
+function renderLoading(): string {
+  const htmlLang = vscode.env.language.startsWith('fr') ? 'fr' : 'en';
+  return `<!DOCTYPE html>
+<html lang="${htmlLang}">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';" />
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--vscode-font-family);
+    color: var(--vscode-foreground);
+    background: var(--vscode-editor-background);
+  }
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid color-mix(in srgb, var(--vscode-foreground) 15%, transparent);
+    border-top-color: var(--vscode-textLink-foreground, #4e94ff);
+    animation: spin 0.8s linear infinite;
+  }
+  .label {
+    font-size: 12.5px;
+    color: color-mix(in srgb, var(--vscode-foreground) 60%, transparent);
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+  <div class="loading">
+    <div class="spinner" role="img" aria-label="${escapeHtml(vscode.l10n.t('Loading'))}"></div>
+    <div class="label">${escapeHtml(vscode.l10n.t('Loading data and statistics…'))}</div>
+  </div>
+</body>
+</html>`;
+}
 
 function render(
   project: string,

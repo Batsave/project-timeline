@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.2.5
+
+Retroactive git-based statistics, monthly calendar navigation, and dashboard polish.
+
+### New
+
+- **Retroactive git history stats** (`src/core/gitStats.ts`): language composition and most-worked files are now computed from the *entire* git history (up to 2000 commits), not just live-tracked events — covers edits made before the extension was installed.
+  - Language breakdown (`byLanguage`) and top files (`topFiles`) are derived from `repo.log` + `diffBetweenWithStats` via the `vscode.git` API only — no `git` process spawned.
+  - Used as the primary source for "Project composition" and "Most worked-on files" when available, falling back to the live 7-day rollup otherwise; each section is labeled accordingly ("full git history" vs "· 7 d").
+  - Computed once per panel session and cached (one diff per commit — expensive to recompute).
+
+- **Monthly calendar navigation**: the activity heatmap now shows one calendar month at a time (`buildCalendarGridForMonth`) with Previous/Next controls (`availableMonths`), instead of a fixed rolling window.
+
+- **Non-linear daily series** (`dailySeriesNonLinear`): consecutive days with zero activity are collapsed into a single compact gap point on the time/token charts, instead of each empty day taking up its own axis slot.
+
+- **"Tokens (excl. cache)" metric**: new per-agent stat surfaced alongside total tokens.
+
+- Custom themed scrollbars across the dashboard; panels in 2-column grids now stretch to equal height.
+
+### Fixed
+
+- **CSP broke dynamic inline styles**: `style-src` previously combined `'nonce-…'` with the implicit allowance, which browsers ignore once a nonce is present — silently blocking every dynamically generated `style=""` attribute (language colors, bar widths). `style-src` is now `'unsafe-inline'` alone; the nonce stays on `script-src`, the only directive where it actually guards against JS injection.
+
+### Changed
+
+- Relabeled dashboard legends for clarity: "editor interaction" / "agent alone" / "focus / idle" → "User" / "AI agents" / "Waiting".
+- Added "Show all / Show less" toggle and French localization for new strings.
+
 ## 1.1.0
 
 Local per-project development time tracking, with automatic history reconstruction and a built-in dashboard.
