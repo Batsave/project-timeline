@@ -1,12 +1,15 @@
 {
-  "version": "2026-08-01",
-  "date": "2026-08-30",
-  "source": "https://openai.com/api/pricing — relevé manuel, à maintenir à la main",
+  "version": "2026-10-02",
+  "date": "2026-10-02",
+  "source": "https://developers.openai.com/api/docs/pricing — relevé manuel (contexte court ≤ 272K), à maintenir à la main. gpt-5-codex, codex-auto-review, o4-mini : absents de la page, prix conservés de l'ancien relevé.",
   "unit": "USD per 1M tokens",
   "models": {
-    "gpt-5-codex": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "gpt-6-astra": { "in": 10, "out": 50, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 },
+    "gpt-5.6-sol": { "in": 4, "out": 20, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 },
+    "gpt-5.6-terra": { "in": 2, "out": 12, "cacheWriteMult": 1.25, "cacheReadMult": 0.1 },
+    "gpt-5.5": { "in": 5, "out": 30, "cacheReadMult": 0.1 },
     "gpt-5": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
-    "gpt-5.5": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
+    "gpt-5-codex": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
     "codex-auto-review": { "in": 1.25, "out": 10, "cacheReadMult": 0.1 },
     "o4-mini": { "in": 1.1, "out": 4.4, "cacheReadMult": 0.25 }
   }

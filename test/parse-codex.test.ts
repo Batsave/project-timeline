@@ -18,7 +18,7 @@ test('lit session_meta : cwd + model', () => {
   assert.equal(r.turns.length, 0);
 });
 
-test('token_usage (delta) — forme observée sur la machine', () => {
+test('token_usage (delta) — forme observée sur la machine ; input hors cache', () => {
   const usage = nl({
     timestamp: '2026-07-19T22:40:00.000Z',
     token_usage: {
@@ -33,8 +33,9 @@ test('token_usage (delta) — forme observée sur la machine', () => {
   const r = parseCodexIncremental(meta + usage, 0, FALLBACK);
   assert.equal(r.turns.length, 1);
   assert.equal(r.turns[0].isCumulative, false);
+  // total_tokens (15194) = input_tokens + output_tokens : le cache est DANS input_tokens
   assert.deepEqual(r.turns[0].tokens, {
-    input: 15106,
+    input: 15106 - 3072,
     output: 88,
     cacheCreate: 0,
     cacheRead: 3072,
@@ -59,7 +60,8 @@ test('total_token_usage sous payload.info -> marqué cumulatif', () => {
   const r = parseCodexIncremental(usage, 0, FALLBACK);
   assert.equal(r.turns.length, 1);
   assert.equal(r.turns[0].isCumulative, true);
-  assert.equal(r.turns[0].tokens.input, 100);
+  assert.equal(r.turns[0].tokens.input, 90); // 100 - 10 en cache
+  assert.equal(r.turns[0].tokens.cacheRead, 10);
 });
 
 test('last_token_usage prioritaire sur token_usage si les deux présents (delta)', () => {
@@ -92,4 +94,14 @@ test('incrémental via nextOffset', () => {
   const second = parseCodexIncremental(meta + u1 + u2, first.nextOffset, FALLBACK);
   assert.equal(second.turns.length, 1);
   assert.equal(second.turns[0].tokens.input, 2);
+});
+
+test('cache > input (donnée incohérente) -> input borné à 0, jamais négatif', () => {
+  const r = parseCodexIncremental(
+    nl({ token_usage: { input_tokens: 5, cached_input_tokens: 8, output_tokens: 1 } }),
+    0,
+    FALLBACK,
+  );
+  assert.equal(r.turns[0].tokens.input, 0);
+  assert.equal(r.turns[0].tokens.cacheRead, 8);
 });

@@ -61,6 +61,21 @@ export function agentEventId(
   return `${agent}:${sessionUuid}:${byteOffset}`;
 }
 
+/**
+ * eventId d'un tour Claude : basé sur l'id de la réponse API quand il existe, pour que
+ * les blocs d'une même réponse (lignes distinctes, même usage) ne comptent qu'une fois,
+ * même s'ils sont lus dans des lots différents.
+ */
+export function claudeTurnEventId(
+  sessionUuid: string,
+  messageId: string | undefined,
+  byteOffset: number,
+): string {
+  return messageId
+    ? `claude:${sessionUuid}:m:${messageId}`
+    : agentEventId('claude', sessionUuid, byteOffset);
+}
+
 /** eventId d'un commit. */
 export function commitEventId(hash: string): string {
   return `commit:${hash}`;

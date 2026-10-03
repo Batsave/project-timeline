@@ -99,11 +99,22 @@ export interface DiagnosticsPayload {
 
 export type AgentKind = 'claude' | 'codex';
 
+/**
+ * Version du CALCUL des tokens agents (parseurs + règles de coût). À incrémenter quand
+ * un correctif change les chiffres : les événements plus anciens sont alors migrés
+ * (cf. core/migrate.ts). 1 = avant dédup Claude / cache 1 h / input Codex hors cache.
+ */
+export const AGENT_CALC_VERSION = 2;
+
 export interface AgentTokens {
   input: number;
   output: number;
+  /** écriture de cache totale (5 min + 1 h). */
   cacheCreate: number;
+  /** part de `cacheCreate` écrite dans le cache 1 h (facturée plus cher). ⊆ cacheCreate. */
+  cacheCreate1h?: number;
   cacheRead: number;
+  /** informatif : déjà inclus dans `output`, jamais facturé en plus. */
   reasoning?: number;
 }
 
@@ -113,6 +124,8 @@ export interface AgentTurnPayload extends AgentTokens {
   model: string;
   costEstimateUSD: number | null;
   pricingVersion: string | null;
+  /** absent = 1 (événement antérieur au versionnage du calcul). */
+  calcVersion?: number;
 }
 
 export interface AgentSessionPayload extends AgentTokens {
@@ -126,4 +139,6 @@ export interface AgentSessionPayload extends AgentTokens {
   costEstimateUSD: number | null;
   pricingVersion: string | null;
   unparsedLines: number;
+  /** absent = 1 (événement antérieur au versionnage du calcul). */
+  calcVersion?: number;
 }

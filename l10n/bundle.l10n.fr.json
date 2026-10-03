@@ -81,6 +81,7 @@
   "AI tokens": "Tokens IA",
   "AI cost": "Prix IA",
   "Click for the full dashboard": "Cliquer pour le tableau de bord complet",
+  "Project Timeline: recomputing agent token history…": "Project Timeline : recalcul de l’historique des tokens agents…",
   "Project Timeline: history rebuilt from Claude/Codex and git sessions (estimated time).": "Project Timeline : historique reconstruit depuis les sessions Claude/Codex et git (temps estimé).",
   "Project Timeline: rollups recomputed.": "Project Timeline : agrégats recalculés.",
   "Exported: {0}": "Exporté : {0}",

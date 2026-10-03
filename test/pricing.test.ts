@@ -56,7 +56,14 @@ test('addTokens somme champ par champ, reasoning inclus', () => {
     { input: 1, output: 2, cacheCreate: 3, cacheRead: 4, reasoning: 5 },
     { input: 10, output: 20, cacheCreate: 30, cacheRead: 40, reasoning: 50 },
   );
-  assert.deepEqual(s, { input: 11, output: 22, cacheCreate: 33, cacheRead: 44, reasoning: 55 });
+  assert.deepEqual(s, {
+    input: 11,
+    output: 22,
+    cacheCreate: 33,
+    cacheCreate1h: 0,
+    cacheRead: 44,
+    reasoning: 55,
+  });
 });
 
 test('diffTokens : delta entre deux cumuls, jamais négatif', () => {
@@ -64,7 +71,14 @@ test('diffTokens : delta entre deux cumuls, jamais négatif', () => {
     { input: 100, output: 50, cacheCreate: 0, cacheRead: 200, reasoning: 10 },
     { input: 80, output: 50, cacheCreate: 0, cacheRead: 150, reasoning: 3 },
   );
-  assert.deepEqual(d, { input: 20, output: 0, cacheCreate: 0, cacheRead: 50, reasoning: 7 });
+  assert.deepEqual(d, {
+    input: 20,
+    output: 0,
+    cacheCreate: 0,
+    cacheCreate1h: 0,
+    cacheRead: 50,
+    reasoning: 7,
+  });
 });
 
 test('diffTokens : compteur qui recule (reset) -> 0, jamais de tokens inventés', () => {
@@ -72,10 +86,61 @@ test('diffTokens : compteur qui recule (reset) -> 0, jamais de tokens inventés'
     { input: 5, output: 1, cacheCreate: 0, cacheRead: 0, reasoning: 0 },
     { input: 999, output: 999, cacheCreate: 0, cacheRead: 0, reasoning: 0 },
   );
-  assert.deepEqual(d, { input: 0, output: 0, cacheCreate: 0, cacheRead: 0, reasoning: 0 });
+  assert.deepEqual(d, {
+    input: 0,
+    output: 0,
+    cacheCreate: 0,
+    cacheCreate1h: 0,
+    cacheRead: 0,
+    reasoning: 0,
+  });
 });
 
 test('nonZero', () => {
   assert.equal(nonZero(ZERO_TOKENS), false);
   assert.equal(nonZero({ ...ZERO_TOKENS, cacheRead: 1 }), true);
+});
+
+test('cache 1 h facturé ×2, le reste de cacheCreate ×1.25', () => {
+  const r = estimateCost(
+    'claude-sonnet-5',
+    { input: 0, output: 0, cacheCreate: 2_000_000, cacheCreate1h: 1_000_000, cacheRead: 0 },
+    table,
+  );
+  // 1M × 3 × 1.25 (5 min) + 1M × 3 × 2 (1 h) = 3.75 + 6 = 9.75
+  assert.equal(r.costEstimateUSD, 9.75);
+});
+
+test('reasoning n’est pas refacturé (déjà inclus dans output)', () => {
+  const tokens = { input: 0, output: 1_000_000, cacheCreate: 0, cacheRead: 0 };
+  const a = estimateCost('claude-sonnet-5', tokens, table);
+  const b = estimateCost('claude-sonnet-5', { ...tokens, reasoning: 800_000 }, table);
+  assert.equal(a.costEstimateUSD, b.costEstimateUSD);
+});
+
+test('normalisation : suffixe [1m] et variante Bedrock -v1:0 après la date', () => {
+  const t = { input: 1_000_000, output: 0, cacheCreate: 0, cacheRead: 0 };
+  assert.equal(estimateCost('claude-sonnet-5[1m]', t, table).costEstimateUSD, 3);
+  assert.equal(
+    estimateCost('anthropic.claude-sonnet-5-20260101-v1:0', t, table).costEstimateUSD,
+    3,
+  );
+});
+
+test('table livrée : chaque modèle Claude courant a un prix', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const path = await import('node:path');
+  const shipped = JSON.parse(
+    await readFile(path.join(process.cwd(), 'pricing', 'claude.json'), 'utf8'),
+  ) as PricingTable;
+  const t = { input: 1, output: 1, cacheCreate: 0, cacheRead: 0 };
+  for (const m of [
+    'claude-opus-5-5',
+    'claude-sonnet-5-5',
+    'claude-sonnet-5',
+    'claude-fable-5-1',
+    'claude-haiku-4-5-20251001',
+  ]) {
+    assert.notEqual(estimateCost(m, t, shipped).costEstimateUSD, null, m);
+  }
 });

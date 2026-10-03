@@ -4,6 +4,7 @@ import {
   encodeEvent,
   decodeEvents,
   agentEventId,
+  claudeTurnEventId,
   commitEventId,
   liveEventId,
 } from '../src/core/jsonl.js';
@@ -48,6 +49,15 @@ test('id helpers', () => {
   assert.equal(agentEventId('codex', 'abc', 42), 'codex:abc:42');
   assert.equal(commitEventId('deadbeef'), 'commit:deadbeef');
   assert.equal(liveEventId('file_edit', 's9', 3), 'file_edit:s9:3');
+  assert.equal(claudeTurnEventId('u1', 'msg_A:req_A', 42), 'claude:u1:m:msg_A:req_A');
+  assert.equal(claudeTurnEventId('u1', undefined, 42), 'claude:u1:42');
+});
+
+test('tour Claude relu après redémarrage (offset différent, même réponse API) -> 1 seul', () => {
+  const payload = { agent: 'claude', input: 1, output: 1, cacheCreate: 0, cacheRead: 0 };
+  const a = ev({ eventId: claudeTurnEventId('u1', 'msg_A:req_A', 0), type: 'agent_turn', payload });
+  const b = ev({ eventId: claudeTurnEventId('u1', 'msg_A:req_A', 812), type: 'agent_turn', payload });
+  assert.equal(decodeEvents(encodeEvent(a) + encodeEvent(b)).length, 1);
 });
 
 test('computeRollup agrège temps, agents, git, tests, filtre par période', () => {

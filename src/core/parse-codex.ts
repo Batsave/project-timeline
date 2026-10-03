@@ -10,6 +10,9 @@
  *       output_tokens, reasoning_output_tokens, total_tokens }
  *     clés possibles : token_usage | total_token_usage | last_token_usage | info.total_token_usage
  *     `last_*` = delta du tour ; `total_*` = cumul de la session.
+ *   ATTENTION (vérifié : total_tokens = input_tokens + output_tokens) :
+ *     - input_tokens INCLUT cached_input_tokens -> on les retire pour ne pas facturer deux fois ;
+ *     - output_tokens INCLUT reasoning_output_tokens -> reasoning reste informatif.
  */
 import type { AgentTokens } from './types.js';
 
@@ -139,11 +142,13 @@ function hasAnyTokenKey(n: any): boolean {
 }
 
 function readTokens(n: any): AgentTokens {
+  const cacheRead = num(n.cached_input_tokens ?? n.cache_read_input_tokens);
+  const cacheCreate = num(n.cache_write_input_tokens ?? n.cache_creation_input_tokens);
   return {
-    input: num(n.input_tokens),
+    input: Math.max(0, num(n.input_tokens) - cacheRead - cacheCreate),
     output: num(n.output_tokens),
-    cacheCreate: num(n.cache_write_input_tokens ?? n.cache_creation_input_tokens),
-    cacheRead: num(n.cached_input_tokens ?? n.cache_read_input_tokens),
+    cacheCreate,
+    cacheRead,
     reasoning: num(n.reasoning_output_tokens),
   };
 }

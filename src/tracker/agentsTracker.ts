@@ -3,8 +3,9 @@
  * Émet agent_turn (par ligne) + agent_session (cumul, ré-émis à chaque flush).
  * Expose `lastAgentWriteMs()` pour la règle `alive` d'ActivityTracker.
  *
- * Idempotence : eventId déterministe `<agent>:<uuid>:<byteOffset>`. offsets.json n'est
- * qu'un cache — un re-parse complet ne double-compte pas (dédup au rollup).
+ * Idempotence : eventId déterministe `<agent>:<uuid>:<byteOffset>` (Claude : basé sur
+ * l'id de réponse API, cf. claudeTurnEventId). offsets.json n'est qu'un cache — un
+ * re-parse complet ne double-compte pas (dédup au rollup).
  */
 import * as vscode from 'vscode';
 import { promises as fs } from 'node:fs';
@@ -24,8 +25,8 @@ import {
   ZERO_TOKENS,
   type PricingTable,
 } from '../core/pricing.js';
-import { agentEventId } from '../core/jsonl.js';
-import type { AgentKind, AgentTokens } from '../core/types.js';
+import { agentEventId, claudeTurnEventId } from '../core/jsonl.js';
+import { AGENT_CALC_VERSION, type AgentKind, type AgentTokens } from '../core/types.js';
 
 const POLL_MS = 5_000;
 
@@ -48,6 +49,8 @@ interface SessionAgg {
 
 export class AgentsTracker {
   private offsets: Record<string, number> = {};
+  /** messageIds Claude déjà comptés, par fichier (une réponse API = plusieurs lignes). */
+  private claudeSeen = new Map<string, Set<string>>();
   private sessions = new Map<string, SessionAgg>();
   private lastWriteMs = 0;
   private timer?: NodeJS.Timeout;
@@ -123,13 +126,20 @@ export class AgentsTracker {
     for (const name of entries) {
       const full = path.join(dir, name);
       const uuid = name.replace(/\.jsonl$/, '');
+      let seen = this.claudeSeen.get(full);
+      if (!seen) {
+        seen = new Set();
+        this.claudeSeen.set(full, seen);
+      }
+      const seenIds = seen;
       await this.processFile(full, 'claude', uuid, (content, start, fallbackTs) => {
-        const r = parseClaudeIncremental(content, start, fallbackTs);
+        const r = parseClaudeIncremental(content, start, fallbackTs, seenIds);
         return {
           nextOffset: r.nextOffset,
           unparsedLines: r.unparsedLines,
           turns: r.turns.map((t) => ({
             byteOffset: t.byteOffset,
+            messageId: t.messageId,
             ts: t.ts,
             model: t.model,
             tokens: t.tokens,
@@ -183,6 +193,7 @@ export class AgentsTracker {
       meta: { cwd?: string; model?: string } | undefined;
       turns: Array<{
         byteOffset: number;
+        messageId?: string;
         ts: string;
         model: string;
         tokens: AgentTokens;
@@ -264,8 +275,11 @@ export class AgentsTracker {
           ...delta,
           costEstimateUSD: turnCost.costEstimateUSD,
           pricingVersion: turnCost.pricingVersion,
+          calcVersion: AGENT_CALC_VERSION,
         },
-        agentEventId(agent, uuid, turn.byteOffset),
+        agent === 'claude'
+          ? claudeTurnEventId(uuid, turn.messageId, turn.byteOffset)
+          : agentEventId(agent, uuid, turn.byteOffset),
       );
     }
     agg.unparsedLines += result.unparsedLines;
@@ -286,7 +300,7 @@ export class AgentsTracker {
       agg = {
         agent,
         uuid,
-        model: agent === 'claude' ? 'claude-sonnet-5' : 'gpt-5-codex',
+        model: agent === 'claude' ? 'unknown' : 'gpt-5-codex',
         cwd,
         startedAt: nowIso,
         endedAt: nowIso,
@@ -320,6 +334,7 @@ export class AgentsTracker {
         costEstimateUSD: cost.costEstimateUSD,
         pricingVersion: cost.pricingVersion,
         unparsedLines: agg.unparsedLines,
+        calcVersion: AGENT_CALC_VERSION,
       },
       // eventId inclut l'offset de la dernière ligne lue -> chaque version a son id,
       // le rollup garde la version au plus grand offset par sessionUuid.

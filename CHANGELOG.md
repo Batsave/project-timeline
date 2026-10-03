@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+Token and cost figures fixed, and stored history corrected automatically.
+
+### Fixed
+
+- **Claude turns counted 1.5–3×**: Claude Code writes one JSONL line per content block (thinking / text / tool_use), each repeating the same `usage`. Turns are now deduplicated by `message.id` + `requestId`, and their eventId is based on it so duplicates read in different batches (or after a restart) are dropped too.
+- **Claude 1-hour cache writes priced at 1.25×**: Claude Code almost exclusively uses the 1 h cache, billed at 2× input. `usage.cache_creation.ephemeral_1h_input_tokens` is now read (`cacheCreate1h`) and priced with `cacheWrite1hMult` (default 2).
+- **Codex cached input billed twice**: `input_tokens` already includes `cached_input_tokens`; input is now stored net of cache.
+- **Codex turns priced as `gpt-5-codex`**: the session model was only known in the first read batch; it is now taken from the full file.
+- **Price tables** refreshed from the official pages (2026-10-02): Sonnet 5 $2/$10, Opus 5 $5/$25, Opus 5.5 $4/$20 (cache read 0.05×), Fable 5 / 5.1, Sonnet 5.5, gpt-6-astra, gpt-5.6-sol/terra, gpt-5.5 $5/$30. `<synthetic>` messages are ignored; `[1m]` and Bedrock `-v1:0` suffixes are normalized.
+
+### New
+
+- **History migration** (`src/core/migrate.ts`, `src/tracker/historyMigration.ts`): on every extension version change — or whenever the log holds agent events from an older calculation (`AGENT_CALC_VERSION`) — stored agent history is recomputed, for all projects:
+  - sessions whose transcript still exists are re-parsed exactly with current prices;
+  - sessions whose transcript is gone (Claude Code purges them after ~30 days) are corrected from the stored events: consecutive identical Claude turns removed (+0.1 % vs exact re-parse), cache writes assumed 1 h, Codex input net of cache, cost recomputed.
+  - The log is compacted at the same time (duplicate eventIds and superseded `agent_session` versions removed); lines appended meanwhile by other windows are carried over. A lock file prevents two windows migrating at once.
+
 ## 1.2.5
 
 Retroactive git-based statistics, monthly calendar navigation, and dashboard polish.

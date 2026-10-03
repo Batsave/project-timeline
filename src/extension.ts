@@ -9,6 +9,7 @@ import { currentProjectName } from './workspace.js';
 import { ActivityTrackerVS } from './tracker/activityTracker.js';
 import { AgentsTracker } from './tracker/agentsTracker.js';
 import { BackfillRunner } from './tracker/backfillRunner.js';
+import { HistoryMigration } from './tracker/historyMigration.js';
 import { EditorTracker } from './tracker/editorTracker.js';
 import { GitTracker } from './tracker/gitTracker.js';
 import { TestsTracker } from './tracker/testsTracker.js';
@@ -44,6 +45,13 @@ export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
   await store.init();
   const emitter = new Emitter(store);
   const project = currentProjectName();
+
+  // Changement de version : corrige l'historique agents déjà stocké (avant tout tracker).
+  try {
+    await new HistoryMigration(ctx, cfg, store).runIfNeeded();
+  } catch (e) {
+    log(`migration échouée (non bloquant) : ${e}`);
+  }
 
   // Backfill à la première ouverture : reconstruit l'historique agents + git.
   try {

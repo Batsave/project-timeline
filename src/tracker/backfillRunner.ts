@@ -19,9 +19,9 @@ import { projectPathToClaudeSlug, isCwdUnder } from '../core/slug.js';
 import { parseClaudeIncremental } from '../core/parse-claude.js';
 import { parseCodexIncremental } from '../core/parse-codex.js';
 import { estimateCost, diffTokens, addTokens, nonZero, ZERO_TOKENS, type PricingTable } from '../core/pricing.js';
-import { agentEventId } from '../core/jsonl.js';
+import { agentEventId, claudeTurnEventId } from '../core/jsonl.js';
 import { buildBackfillEvents, needsBackfill, type BackfillCommit } from '../core/backfill.js';
-import type { AgentKind, AgentTokens, TrackEvent } from '../core/types.js';
+import { AGENT_CALC_VERSION, type AgentKind, type AgentTokens, type TrackEvent } from '../core/types.js';
 
 export class BackfillRunner {
   constructor(
@@ -112,7 +112,8 @@ export class BackfillRunner {
         agg.model = t.model || agg.model;
         agg.tokens = addTokens(agg.tokens, t.tokens);
         const cost = estimateCost(t.model, t.tokens, pricing);
-        out.push(this.turnEvent('claude', uuid, t.ts, t.model, t.tokens, cost, t.byteOffset));
+        const eventId = claudeTurnEventId(uuid, t.messageId, t.byteOffset);
+        out.push(this.turnEvent('claude', uuid, t.ts, t.model, t.tokens, cost, eventId));
         count++;
       }
       if (r.turns.length) {
@@ -164,7 +165,8 @@ export class BackfillRunner {
         agg.endedAt = t.ts;
         agg.tokens = addTokens(agg.tokens, delta);
         const cost = estimateCost(model, delta, pricing);
-        out.push(this.turnEvent('codex', uuid, t.ts, model, delta, cost, t.byteOffset));
+        const eventId = agentEventId('codex', uuid, t.byteOffset);
+        out.push(this.turnEvent('codex', uuid, t.ts, model, delta, cost, eventId));
         count++;
       }
       if (agg.turns) {
@@ -229,7 +231,7 @@ export class BackfillRunner {
     return {
       agent,
       uuid,
-      model: agent === 'claude' ? 'claude-sonnet-5' : 'gpt-5-codex',
+      model: agent === 'claude' ? 'unknown' : 'gpt-5-codex',
       startedAt: nowIso,
       endedAt: nowIso,
       turns: 0,
@@ -245,10 +247,10 @@ export class BackfillRunner {
     model: string,
     tokens: AgentTokens,
     cost: ReturnType<typeof estimateCost>,
-    byteOffset: number,
+    eventId: string,
   ): TrackEvent {
     return {
-      eventId: agentEventId(agent, uuid, byteOffset),
+      eventId,
       ts,
       project: this.project,
       sessionId: 'bf_agents',
@@ -260,6 +262,7 @@ export class BackfillRunner {
         ...tokens,
         costEstimateUSD: cost.costEstimateUSD,
         pricingVersion: cost.pricingVersion,
+        calcVersion: AGENT_CALC_VERSION,
       },
     };
   }
@@ -288,6 +291,7 @@ export class BackfillRunner {
         costEstimateUSD: cost.costEstimateUSD,
         pricingVersion: cost.pricingVersion,
         unparsedLines: agg.unparsedLines,
+        calcVersion: AGENT_CALC_VERSION,
       },
     };
   }

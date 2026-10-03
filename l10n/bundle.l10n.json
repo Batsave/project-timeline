@@ -81,6 +81,7 @@
   "AI tokens": "AI tokens",
   "AI cost": "AI cost",
   "Click for the full dashboard": "Click for the full dashboard",
+  "Project Timeline: recomputing agent token history…": "Project Timeline: recomputing agent token history…",
   "Project Timeline: history rebuilt from Claude/Codex and git sessions (estimated time).": "Project Timeline: history rebuilt from Claude/Codex and git sessions (estimated time).",
   "Project Timeline: rollups recomputed.": "Project Timeline: rollups recomputed.",
   "Exported: {0}": "Exported: {0}",
